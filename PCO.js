@@ -9,7 +9,7 @@ var app = express();
 
 //Declare some global variables
 var clientstotal = 0;                                                          //Client ID counter
-var clients = [];                                                              //Client data objects
+var clients = [null];                                                          //Client data objects (start with a null entry so the client counter lines up with the index of each client)
 var connections = [];                                                          //IRC client objects
 var clientlogs = [];                                                           //Client message logs
 var pingchecks = [];                                                           //Ping update intervals
