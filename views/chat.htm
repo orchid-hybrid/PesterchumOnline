@@ -1,0 +1,18 @@
+doctype
+html
+    head
+        title= "Pesterchum Online"
+        script(src='/jquery.js')
+        script(src='/modernizr.js')
+        script(src='/client_core.js')
+    body
+        #mynick(style='font-weight:bold;')
+        #content(style='width: 500px; height: 300px; margin: 0 0 20px 0; border: solid 1px #999; overflow-y: scroll; font-family:Courier New;')
+            |Connecting to server...
+        .controls
+            input.field(style='width:350px;', id='field')
+            input.send(type='button', value='send', id='send')
+            br
+            |#&nbsp;
+            input.joinfield(style='width:350px;', id='joinfield')
+            input.joinsend(type='button', value='join', id='joinsend')

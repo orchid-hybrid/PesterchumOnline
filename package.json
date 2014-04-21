@@ -1,0 +1,17 @@
+{
+    "name": "PesterchumOnline",
+    "author": "Hydrothermal",
+    "version": "0.1.0",
+    "description": "Pesterchum Online",
+    "dependencies": {
+        "irc": "latest",
+        "express": "latest",
+        "ejs": "latest",
+        "stylus": "latest",
+        "body-parser": "latest"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Hydrothermal/PesterchumOnline"
+    }
+}
