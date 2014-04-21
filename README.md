@@ -3,7 +3,8 @@ Pesterchum Online
 This is the repository for Pesterchum Online, an online client for the Pesterchum IRC network. It runs off NodeJS, using the NodeIRC library. Express, EJS, and Stylus are used for serving pages.
 
 ##Getting started  
-First run `npm install` in the root directory to get all the required modules down. Then run `node PCO.js` to start the app. If everything went in right, you should see something like this:  
+First run `npm install` in the root directory to get all the required modules down. Then run `node PCO.js` to start the app. If everything went in right, you should see something like this:
+
     PCO v0.1.0 started.
       Configured HTML engine using EJS.
       Using HTML as view engine.
