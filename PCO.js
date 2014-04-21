@@ -38,7 +38,7 @@ function getIPFct(req) {
 console.log("PCO v"+pjson.version+" started.");                                 //Log startup
 
 //Setting stuff up
-app.engine('html', ejs.renderFile);
+app.engine('htm', ejs.renderFile);
     applog("Configured HTML engine using EJS.")
 app.set('view engine', "html");
     applog("Using HTML as view engine.");
@@ -53,12 +53,12 @@ app.listen(port);
 
 //Listeners
 app.get("/", function(req, res){                                               //Index
-    res.render("index");                                                       //Render index.htm
+    res.render("index.htm");                                                   //Render index.htm
     var ip = getIPFct(req);                                                    //Client IP address
     applog("Rendered index.htm for "+ip+".");                                  //Log
 });
 app.get("/chat", function(req, res){                                           //Chat page
-    res.render("chat");                                                        //Render chat.htm
+    res.render("chat.htm");                                                    //Render chat.htm
     var ip = getIPFct(req);                                                    //Client IP address
     applog("Rendered chat.htm for "+ip+".");                                   //Log
 });
