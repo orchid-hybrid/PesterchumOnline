@@ -3,21 +3,24 @@ Pesterchum Online
 This is the repository for Pesterchum Online, an online client for the Pesterchum IRC network. It runs off NodeJS, using the NodeIRC library. Express, EJS, and Stylus are used for serving pages.
 
 ##Getting started  
-First run `npm install` in the root directory to get all the required modules down. Then run `node PCO.js` to start the app. If everything went in right, you should see something like this:
+PCO uses NodeJS - if you haven't installed that yet, do so.  
+Run `npm install` in the root directory to get all the required modules down, then run `node PCO.js` to start the app. If everything went in right, you should see something like this:
 
-    PCO v0.1.0 started.
-      Configured HTML engine using EJS.
-      Using HTML as view engine.
-      Loaded bodyParser.
-      Serving views on /views.
-      Serving resources on /public.
-      Listening on port 612.
+```
+PCO v0.1.0 started.
+  Configured HTML engine using EJS.
+  Using HTML as view engine.
+  Loaded bodyParser.
+  Serving views on /views.
+  Serving resources on /public.
+  Listening on port 612.
+```
 
-The app uses `process.env.PORT` if one exists (if you're using Heroku or Cloud9, for example) - if not, it defaults to :612. Open a browser to the logged port to see where everything starts.
+The app uses `process.env.PORT` if it exists (if you're using Heroku or Cloud9, for example) - if not, it defaults to `:612`. Open a browser to the logged port to see where everything starts.
 
 ##Technical overview  
-###Initial functionality:  
-The user starts on the index page and inputs a handle. This is checked against Pesterchum specifications using the `/^[a-z][a-z0-9]*[A-Z][a-z0-9]*$/` RegEx (the handle must start with a lowercase letter, have exactly one uppercase letter, and contain only alphanumeric characters). Modernizr checks sessionStorage availability - if it's available, it's used to pass the handle to the next page. If not, `window.name` is used.
+###Basic functionality:  
+The user starts on the index page and inputs a handle. This is checked against Pesterchum specifications using the RegEx `/^[a-z][a-z0-9]*[A-Z][a-z0-9]*$/` (the handle must start with a lowercase letter, have exactly one uppercase letter, and contain only alphanumeric characters). Modernizr checks sessionStorage availability - if it's available, it's used to pass the handle to the next page. If not, `window.name` is used.
 
 The client goes to the main page and gets the nick from either sessionStorage or `window.name`. It checks it again with the same RegEx, then transmits it to the server in an HTTP `POST` to /znewclient. If the RegEx fails validation, the client is bounced back to the index page. Otherwise, the server receives the request and does the following:
 
@@ -52,10 +55,10 @@ The client checks to see if the memo already exists in its `channels` array (i.e
 **Sending a message:**  
 The client transmits its ID, the message, and the memo to which to send the message to the server in an HTTP `POST` to /zsendmessage. The server receives this and doe the following:
 
-* Uses `.toUpperCase()+/[A-Z]/.exec(handle)[0]` to get the clients two-letter prefix
+* Uses `handle[0].toUpperCase()+/[A-Z]/.exec(handle)[0]` to get the client's two-letter prefix
 * Adds the prefix to the message along with its color
 * Uses the client's ID to have the corresponding IRC connection send the message to the memo
 * Replaces color tags and special characters using `htmlFormatFct`
 * Pushes the formatted message to the `clientlogs` array corresponding to the client
 
-##This readme is a WIP and will be updated as progress is made.
+####This readme is a WIP and will be updated as progress is made.
