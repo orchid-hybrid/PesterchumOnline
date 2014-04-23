@@ -25,8 +25,8 @@ function killClientFct(id,reason) {
 }
 
 function htmlFormatFct(message) {
-    return message.replace(/<[cC]=(\d\d?\d?,[ ]*\d\d?\d?,[ ]*\d\d?\d?).*>/g,"<c=rgb($1)>") //Convert RGB color codes to CSS RGB syntax
-                  .replace(/<[cC]=(.*)>/g,"<span style='color:$1'>")           //Convert all color tags to spans
+    return message.replace(/<[cC]=(\d{1,3},\d{1,3},\d{1,3})>/g,"<c=rgb($1)>")  //Convert RGB color codes to CSS RGB syntax
+                  .replace(/<[cC]=([^>]*)>/g,"<span style='color: $1'>")       //Convert all color tags to spans
                   .replace(/<\/c>/g,"</span>")                                 //Convert closing color tags to closing spans
                   .replace(/\s{2,}/g," ");                                     //Remove extra spaces
 }
