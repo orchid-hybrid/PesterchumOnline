@@ -7,7 +7,6 @@
         "irc": "latest",
         "express": "latest",
         "ejs": "latest",
-        "stylus": "latest",
         "body-parser": "latest"
     },
     "repository": {
