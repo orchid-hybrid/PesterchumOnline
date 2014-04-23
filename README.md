@@ -33,7 +33,7 @@ The client goes to the main page and gets the nick from either sessionStorage or
 * Adds a `message` listener to the connection
     * Adds a space at the end of the message if one doesn't exist already (this solves issues with IRC and Chumdroid)
     * Replaces color tags and special characters using `htmlFormatFct`
-    * Checks if the channel the message was sent from is `#pesterchum`
+    * Checks if the channel the message was sent from is `#pesterchum` or if the message is a `PESTERCHUM:TIME` message
         * If not, formatted message is pushed to the `clientlogs` array corresponding to the client
         * If so, **[WIP]**
 * Sends the client its object from the `clients` array

@@ -133,7 +133,7 @@ app.post("/znewclient", function(req, res){                                    /
         
         msgtext = htmlFormatFct(msgtext);
         
-        if(channel!="#pesterchum") {                                           //Ignore #pesterchum messages
+        if(channel!="#pesterchum" && msgtext.search("PESTERCHUM:TIME>")===-1) { //Ignore #pesterchum and PESTERCHUM:TIME messages
             clientlogs[id].push("<span style='font-weight:bold'>"+channel+": </span>"+msgtext); //HTML Channel prefix - to be removed in favor of tabs
         }
     });
