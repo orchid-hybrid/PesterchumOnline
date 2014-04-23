@@ -88,7 +88,7 @@ app.post("/zsendmessage", function(req, res){                                  /
     var htmlmsg = "<span style='font-weight:bold'>"+targ+": </span>"+message;  //HTML Channel prefix - to be removed in favor of tabs
     clientlogs[clientid].push(htmlFormatFct(htmlmsg));                         //Add the message to the client log
 
-    applog("Client "+clientid+" sent message \""+message+"\" to memo "+memo+"."); //Log
+    applog("Client "+clientid+" sent message \""+message+"\" to memo "+targ+"."); //Log
 });
 
 app.post("/znewclient", function(req, res){                                    //Initial new client request
