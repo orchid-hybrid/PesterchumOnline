@@ -10,8 +10,6 @@ window.onload = function() {
         window.name = "";                                                      //Clear window.name
     }
 
-    alert(nick);
-
     if(!nick || /^[a-z][a-z0-9]*[A-Z][a-z0-9]*$/.test(nick)===false) {         //If you went straight to the page or the handle doesn't validate
         forcequit=true;                                                        //Force quit
         window.location.replace("./");                                         //Back to index
