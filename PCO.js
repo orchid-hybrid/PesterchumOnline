@@ -1,5 +1,5 @@
 //Environment setup
-var port = +process.env.PORT || 612                                            //Use :612 if we're testing locally; environment port if we're live
+var port = +process.env.PORT || 612;                                           //Use :612 if we're testing locally; environment port if we're live
 var express = require("express"),
     irc = require("irc"),
     bodyParser = require("body-parser"),
@@ -19,13 +19,13 @@ function applog(text) {
 }
 
 function killClientFct(id,reason) {
-    if(reason==undefined) { reason = "Quit"; }                                 //If you didn't specify a reason, assume it was a normal quit
+    if(reason===undefined) { reason = "Quit"; }                                //If you didn't specify a reason, assume it was a normal quit
     connections[id].disconnect(reason);                                        //Disconnect the client with the specified reason
     applog("Killed client "+id+" for reason "+reason+".");                     //Log
 }
 
 function htmlFormatFct(message) {
-    var urlregex = /((?:(?:https?|ftp):\/\/)(?:\S+(?::\S*)?@)?(?:(?!10(?:\.\d{1,3}){3})(?!127(?:\.‌​\d{1,3}){3})(?!169\.254(?:\.\d{1,3}){2})(?!192\.168(?:\.\d{1,3}){2})(?!172\.(?:1[‌​6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1‌​,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00‌​a1-\uffff0-9]+-?)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]+-?)*[a-z\u‌​00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:\/[^\s]*)?)/i
+    var urlregex = /((?:(?:https?|ftp):\/\/)(?:\S+(?::\S*)?@)?(?:(?!10(?:\.\d{1,3}){3})(?!127(?:\.\d{1,3}){3})(?!169\.254(?:\.\d{1,3}){2})(?!192\.168(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]+-?)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]+-?)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:\/[^\s<]*)?)/i;
     return message.replace(/<[cC]=(\d{1,3},\d{1,3},\d{1,3})>/g,"<c=rgb($1)>")  //Convert RGB color codes to CSS RGB syntax
                   .replace(/<[cC]=([^>]*)>/g,"<span style='color: $1'>")       //Convert all color tags to spans
                   .replace(/<\/c>/g,"</span>")                                 //Convert closing color tags to closing spans
@@ -41,7 +41,7 @@ console.log("PCO v"+pjson.version+" started.");                                 
 
 //Setting stuff up
 app.engine('htm', ejs.renderFile);
-    applog("Configured HTML engine using EJS.")
+    applog("Configured HTML engine using EJS.");
 app.set('view engine', "html");
     applog("Using HTML as view engine.");
 app.use(bodyParser());
@@ -103,9 +103,9 @@ app.post("/znewclient", function(req, res){                                    /
     clients.push({                                                             //Create the new client
                   "id": id,                                                    //Unique ID
                   "nick": nick,                                                //Handle
-//                "userName": "PCO"+id,                                        //Username using ID
+//                "userName": "pco"+id,                                        //Username using ID
                   "userName": "pcc31",                                         //Spoof Pesterchum client
-                  "realName": "PCO"+id,                                        //Realname using ID - to be removed in favor of IP address or hostmask
+                  "realName": "pco"+id,                                        //Realname using ID - to be removed in favor of IP address or hostmask
                   "missedpings": 0,                                            //Number of updates missed
                   "channels": ["#pesterchum","#PesterchumOnline"]              //Initial channels
                  });
