@@ -13,6 +13,9 @@ var clients = [null];                                                          /
 var connections = [];                                                          //IRC client objects
 var clientlogs = [];                                                           //Client message logs
 var pingchecks = [];                                                           //Ping update intervals
+var Pesterchum = {                                                             //Pesterchum helper object
+    Messages: {}                                                               //Message emitters
+};
 
 function applog(text) {
     console.log("  "+text);
@@ -35,6 +38,47 @@ function htmlFormatFct(message) {
 
 function getIPFct(req) {
     return req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+}
+
+function pad(num,len) {
+    return ("000000000000000" + num).slice(-len);                               //Add a bunch of zeroes to the front and slice from the end
+}
+
+Pesterchum.getPrefixFct = function(handle) {
+    return handle[0].toUpperCase()+/[A-Z]/.exec(handle)[0];                     //Return the handle's prefix
+}
+Pesterchum.Messages.time = function(time) {
+    time = time ? time : "?";                                                   //Default to ??:??0
+    if(time === 0) {
+        return "PESTERCHUM:TIME>i";                                             //Current time
+    } else if (time > 0) {
+        time = pad(time,4);                                                     //Pad to four digits
+        time = time.substr(0, 2) + ":" + time.substr(2);                        //Insert a colon into the middle
+        return "PESTERCHUM:TIME>F" + time;                                      //Future time
+    } else if (time < 0) {
+        time = pad(-time,4);                                                    //Flip from negative to positive and pad to four digits
+        time = time.substr(0, 2) + ":" + time.substr(2);                        //Insert a colon into the middle
+        return "PESTERCHUM:TIME>P" + time;                                      //Past time
+    } else {
+        return "PESTERCHUM:TIME>?";                                             //Unknown time
+    }
+}
+Pesterchum.Messages.mood = function(mood) {
+    mood = mood ? mood : "chummy";                                              //Default to chummy
+    //Taken directly from Pesterchum's mood.py file
+    moods = ["chummy", "rancorous", "offline", "pleasant", "distraught",
+             "pranky", "smooth", "ecstatic", "relaxed", "discontent",
+             "devious", "sleek", "detestful", "mirthful", "manipulative",
+             "vigorous", "perky", "acceptant", "protective", "mystified",
+             "amazed", "insolent", "bemused" ];
+    var moodnum = moods.indexOf(mood.toLowerCase());                            //Get the index of the requested mood
+
+    if(moodnum != -1) {                                                         //If the requested mood matched
+        return "MOOD >" + moodnum;                                              //Return the mood message with the requested mood's index
+    } else {                                                                    //If the requested mood did not match
+        applog("Requested mood " + mood + " not found; defaulting to chummy.")  //Log the mistake
+        return "MOOD >0";                                                       //Default to chummy
+    }
 }
 
 console.log("PCO v"+pjson.version+" started.");                                 //Log startup
@@ -83,7 +127,7 @@ app.post("/zsendmessage", function(req, res){                                  /
     var targ = req.body.memo;                                                  //Get the requested target
     var message = req.body.message;                                            //Get the message
     var handle = clients[clientid].nick;                                       //Get the client's handle
-    var prefix = handle[0].toUpperCase()+/[A-Z]/.exec(handle)[0];              //Get the client's prefix
+    var prefix = Pesterchum.getPrefixFct();                                    //Get the client's prefix
 
     message = "<c=255,0,0>"+prefix+": "+message+"</c>";                        //Compile actual message
     connections[clientid].say(targ,message);                                   //Send the message
