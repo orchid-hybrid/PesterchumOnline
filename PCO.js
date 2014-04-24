@@ -131,7 +131,7 @@ app.post("/zsendmessage", function(req, res){                                  /
     var targ = req.body.memo;                                                  //Get the requested target
     var message = req.body.message;                                            //Get the message
     var handle = clients[clientid].nick;                                       //Get the client's handle
-    var prefix = Pesterchum.getPrefixFct();                                    //Get the client's prefix
+    var prefix = Pesterchum.getPrefixFct(handle);                              //Get the client's prefix
 
     message = "<c=255,0,0>"+prefix+": "+message+"</c>";                        //Compile actual message
     connections[clientid].say(targ,message);                                   //Send the message
