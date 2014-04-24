@@ -117,7 +117,11 @@ app.post("/zupdate", function(req, res){                                       /
 
 app.post("/zjoinmemo", function(req, res){                                     //Joining a memo
     var clientid = req.body.id;                                                //Get the client's ID
-    var memo = "#"+req.body.memo;                                              //Get the requested memo
+    if(req.body.memo[0] === "#") {                                             //If you prefixed the memo with a #
+        var memo = req.body.memo;                                              //Get the requested memo
+    } else {                                                                   //If you didn't prefix the memo with a #
+        var memo = "#"+req.body.memo;                                          //Get the requested memo and add the #
+    }
     connections[clientid].join(memo);                                          //Join the requested memo
     applog("Client "+clientid+" joined memo "+memo+".");                       //Log
 });
