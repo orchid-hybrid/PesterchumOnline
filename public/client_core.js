@@ -3,11 +3,13 @@ var forcequit = false;                                                         /
 var curchan = "#PesterchumOnline";                                             //Selected channel
 
 window.onload = function() {
+    "use strict";
+    var nick;
     if(Modernizr.sessionstorage) {                                             //Check for HTML5 sessionStorage support
-        var nick = sessionStorage.getItem("handle");                           //Get the handle you put in
+        nick = sessionStorage.getItem("handle");                               //Get the handle you put in
         sessionStorage.removeItem("handle");                                   //Empty the sessionStorage variable
     } else {                                                                   //If no sessionStorage support
-        var nick = window.name;                                                //Use window.name
+        nick = window.name;                                                    //Use window.name
         window.name = "";                                                      //Clear window.name
     }
 
@@ -39,15 +41,17 @@ window.onload = function() {
     $("#memoselect").change(function() {
         curchan = $("#memoselect").val();                                      //Get the selected memo from the dropdown
     });
-}
+};
 
 window.onbeforeunload = function() {                                           //Catch closing the page
-    if(forcequit==false) {                                                     //If we're not forcing a quit
+    "use strict";
+    if(forcequit === false) {                                                  //If we're not forcing a quit
         return "If you leave this page, you will disconnect from the server and close all memos/pesters."; //Request confirmation
     }
 };
 
 function ircUpdateFct() {
+    "use strict";
     $.post('./zupdate', {id:client.id}, function(data){                        //Request an update from the server
         $('#content').html(data[0].join("<br>"));                              //Load in this client's log
         client = data[1];                                                      //Load in this client's object
@@ -70,6 +74,7 @@ function ircUpdateFct() {
 }
 
 function joinMemoFct(memo) {
+    "use strict";
     if(client.channels.indexOf(memo)===-1) {                                   //Make sure you're not already in the requested memo
         $.post('./zjoinmemo', {id:client.id, memo:memo}, function(data){       //Request a memo join from the server
             console.log("Joined "+memo);                                       //Success
@@ -78,6 +83,7 @@ function joinMemoFct(memo) {
 }
 
 function sendMessageFct(memo,message) {
+    "use strict";
     $.post('./zsendmessage', {id:client.id, memo:memo, message:message}, function(data){ //Request a message send from the server
         console.log("Sent message "+message+" to "+memo);                      //Success
     });
