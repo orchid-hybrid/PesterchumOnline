@@ -1,5 +1,6 @@
 var client = {};                                                               //Client object
 var forcequit = false;                                                         //Forcequit variable
+var curchan = "#PesterchumOnline";                                             //Selected channel
 
 window.onload = function() {
     if(Modernizr.sessionstorage) {                                             //Check for HTML5 sessionStorage support
@@ -18,6 +19,7 @@ window.onload = function() {
     $("#mynick").html("You are "+nick+".");                                    //Your current nick
     $.post('./znewclient', {nick:nick}, function(data){                        //Request a new client from the server
         client = data;                                                         //Fill the returned client details into the client object
+        ircUpdateFct();                                                        //Update
     });
     
     var updateInterval = setInterval(function(){                               //Automatic update
@@ -30,9 +32,12 @@ window.onload = function() {
     });
     
     $("#send").click(function() {                                              //Send button
-        var curchan = "#PesterchumOnline";
         sendMessageFct(curchan,$("#field").val());                             //Send the message
         $("#field").val("");                                                   //Empty the message input
+    });
+
+    $("#memoselect").change(function() {
+        curchan = $("#memoselect").val();                                      //Get the selected memo from the dropdown
     });
 }
 
@@ -44,7 +49,18 @@ window.onbeforeunload = function() {                                           /
 
 function ircUpdateFct() {
     $.post('./zupdate', {id:client.id}, function(data){                        //Request an update from the server
-        $('#content').html(data.join("<br>"));                                 //Load in this client's log
+        $('#content').html(data[0].join("<br>"));                              //Load in this client's log
+        client = data[1];                                                      //Load in this client's object
+        var memolist = "";                                                     //String to hold dropdown HTML
+        for(var i = 0; i < client.channels.length; i++) {                      //Loop through all channels
+            if(client.channels[i] === "#pesterchum") { continue; }             //Skip #pesterchum
+            if(client.channels[i] === curchan) {
+                memolist += "<option selected>" + client.channels[i] + "</option>"; //Option tag for the current channel (selected)
+            } else {
+                memolist += "<option>" + client.channels[i] + "</option>";     //Option tag for the other channels
+            }
+        };
+        $("#memoselect").html(memolist);                                       //Put option tag HTML into the dropdown
     }).error(function() {                                                      //If the server isn't responding
         forcequit = true;                                                      //Force a quit
         location.reload();                                                     //Reload to try and request the page again

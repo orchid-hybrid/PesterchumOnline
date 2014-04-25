@@ -48,7 +48,7 @@ Pesterchum.getPrefixFct = function(handle) {
     return handle[0].toUpperCase()+/[A-Z]/.exec(handle)[0];                     //Return the handle's prefix
 }
 Pesterchum.Messages.time = function(time) {
-    time = time ? time : "?";                                                   //Default to ??:??0
+    time = time ? time : "?";                                                   //Default to ??:??
     if(time === 0) {
         return "PESTERCHUM:TIME>i";                                             //Current time
     } else if (time > 0) {
@@ -112,7 +112,7 @@ app.get("/chat", function(req, res){                                           /
 app.post("/zupdate", function(req, res){                                       //Update interval
     var clientid = req.body.id;                                                //Get the client's ID
     clients[clientid].missedpings = 0;                                         //Reset the client's missed pings to 0
-    res.send(clientlogs[clientid]);                                            //Give the client its chatlog
+    res.send([clientlogs[clientid],clients[clientid]]);                        //Give the client its chatlog and its object
 });
 
 app.post("/zjoinmemo", function(req, res){                                     //Joining a memo
@@ -123,6 +123,7 @@ app.post("/zjoinmemo", function(req, res){                                     /
         var memo = "#"+req.body.memo;                                          //Get the requested memo and add the #
     }
     connections[clientid].join(memo);                                          //Join the requested memo
+    clients[clientid].channels.push(memo);                                     //Add the requested memo the client object's channel list
     applog("Client "+clientid+" joined memo "+memo+".");                       //Log
 });
 
