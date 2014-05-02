@@ -3,7 +3,7 @@ window.onload = function() {
 }
 
 function valHandleFct() {
-    var handle = document.getElementById("handle").val();                      //Get the handle you typed in
+    var handle = document.getElementById("handle").value;                      //Get the handle you typed in
     var valhandle = /^[a-z0-9]*[A-Z][a-z0-9]*$/.test(handle);                  //Validate the handle
     if(valhandle) {                                                            //If validation was successful
         if(Modernizr.sessionstorage) {                                         //Check for HTML5 sessionStorage
