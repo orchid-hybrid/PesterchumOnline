@@ -20,7 +20,7 @@ The app uses `process.env.PORT` if it exists (if you're using Heroku or Cloud9, 
 
 ##Technical overview  
 ###Basic functionality:  
-The user starts on the index page and inputs a handle. This is checked against Pesterchum specifications using the RegEx `/^[a-z][a-z0-9]*[A-Z][a-z0-9]*$/` (the handle must start with a lowercase letter, have exactly one uppercase letter, and contain only alphanumeric characters). Modernizr checks sessionStorage availability - if it's available, it's used to pass the handle to the next page. If not, `window.name` is used.
+The user starts on the index page and inputs a handle. This is checked against Pesterchum specifications using the RegEx `/[a-z0-9]*[A-Z][a-z0-9]*$/` (the handle must not start with a capital letter, have a single capital letter, and contain only alphanumeric characters). Modernizr checks sessionStorage availability - if it's available, it's used to pass the handle to the next page. If not, `window.name` is used.
 
 The client goes to the main page and gets the nick from either sessionStorage or `window.name`. It checks it again with the same RegEx, then transmits it to the server in an HTTP `POST` to /znewclient. If the RegEx fails validation, the client is bounced back to the index page. Otherwise, the server receives the request and does the following:
 
