@@ -3,19 +3,20 @@ var port = +process.env.PORT || 612;                                           /
 var express = require("express"),
     irc = require("irc"),
     bodyParser = require("body-parser"),
-    ejs = require('ejs');
-var pjson = require("./package.json");
+    ejs = require('ejs'),
+    pjson = require("./package.json");
 var app = express();
 
 //Declare some global variables
-var clientstotal = 0;                                                          //Client ID counter
-var clients = [null];                                                          //Client data objects (start with a null entry so the client counter lines up with the index of each client)
-var connections = [];                                                          //IRC client objects
-var clientlogs = [];                                                           //Client message logs
-var pingchecks = [];                                                           //Ping update intervals
-var Pesterchum = {                                                             //Pesterchum helper object
+var clientstotal = 0,                                                          //Client ID counter
+    clients = [null],                                                          //Client data objects (start with a null entry so the client counter lines up with the index of each client)
+    connections = [],                                                          //IRC client objects
+    clientlogs = [],                                                           //Client message logs
+    pingchecks = [],                                                           //Ping update intervals
+    Pesterchum = {                                                             //Pesterchum helper object
     Messages: {}                                                               //Message emitters
-};
+},
+    ip;
 
 function applog(text) {
     "use strict";
@@ -56,8 +57,8 @@ Pesterchum.getPrefixFct = function(handle) {
 
 Pesterchum.validateHandleFct = function(handle) {
     "use strict";
-    return /^[a-z0-9]*[A-Z][a-z0-9]*$/.test(handle);
-}
+    return (/^[a-z0-9]*[A-Z][a-z0-9]*$/).test(handle);
+};
 
 Pesterchum.Messages.time = function(time) {
     "use strict";
@@ -122,7 +123,7 @@ app.listen(port);
 app.get("/", function(req, res){                                               //Index
     "use strict";
     res.render("index.htm");                                                   //Render index.htm
-    var ip = getIPFct(req);                                                    //Client IP address
+    ip = getIPFct(req);                                                        //Client IP address
     applog("Rendered index.htm for " + ip + ".");                              //Log
 });
 app.get("/chat", function(req, res){                                           //Chat page
@@ -131,14 +132,14 @@ app.get("/chat", function(req, res){                                           /
         override = nick.substr(0,9) === "override_";                           //Override prefix
 
     if(!Pesterchum.validateHandleFct(nick) && !override) {                     //Check to see if the handle fails validation
-        var ip = getIPFct(req);                                                //Client IP address
+        ip = getIPFct(req);                                                    //Client IP address
         applog("Rejected invalid handle request from " + ip + ".");            //Log rejection
         res.redirect("/");                                                     //HTTP 502 back to the index page
         return false;                                                          //Stop processing
     }
 
     res.render("chat.htm");                                                    //Render chat.htm
-    var ip = getIPFct(req);                                                    //Client IP address
+    ip = getIPFct(req);                                                        //Client IP address
     applog("Rendered chat.htm for " + ip + ".");                               //Log
 });
 
@@ -182,7 +183,7 @@ app.post("/zsendmessage", function(req, res){                                  /
 
 app.post("/znewclient", function(req, res){                                    //Initial new client request
     "use strict";
-    var ip = getIPFct(req);                                                    //Client IP address
+    ip = getIPFct(req);                                                        //Client IP address
     applog("Responded to /znewclient request from " + ip + ".");               //Log response
     var nick = req.body.nick;                                                  //Get the requested nick
 
