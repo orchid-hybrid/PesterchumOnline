@@ -26,7 +26,7 @@ function killClientFct(id, reason) {
     "use strict";
     if(reason===undefined) { reason = "Quit"; }                                //If you didn't specify a reason, assume it was a normal quit
     connections[id].disconnect(reason);                                        //Disconnect the client with the specified reason
-    applog("Killed client " + id + " for reason " + reason + ".");             //Log
+    applog("Killed client " + id + " (" + clients[id].nick + ") for reason " + reason + "."); //Log
 }
 
 function htmlFormatFct(message) {
