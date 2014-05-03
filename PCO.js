@@ -54,6 +54,11 @@ Pesterchum.getPrefixFct = function(handle) {
     return handle[0].toUpperCase() + /[A-Z]/.exec(handle)[0];                  //Return the handle's prefix
 };
 
+Pesterchum.validateHandleFct = function(handle) {
+    "use strict";
+    return /^[a-z0-9]*[A-Z][a-z0-9]*$/.test(handle);
+}
+
 Pesterchum.Messages.time = function(time) {
     "use strict";
     time = time || "?";                                                        //Default to ??:??
@@ -122,6 +127,16 @@ app.get("/", function(req, res){                                               /
 });
 app.get("/chat", function(req, res){                                           //Chat page
     "use strict";
+    var nick = req.param("nick"),                                              //Get the requested nick
+        override = nick.substr(0,9) === "override_";                           //Override prefix
+
+    if(!Pesterchum.validateHandleFct(nick) && !override) {                     //Check to see if the handle fails validation
+        var ip = getIPFct(req);                                                //Client IP address
+        applog("Rejected invalid handle request from " + ip + ".");            //Log rejection
+        res.redirect("/");                                                     //HTTP 502 back to the index page
+        return false;                                                          //Stop processing
+    }
+
     res.render("chat.htm");                                                    //Render chat.htm
     var ip = getIPFct(req);                                                    //Client IP address
     applog("Rendered chat.htm for " + ip + ".");                               //Log
@@ -170,7 +185,7 @@ app.post("/znewclient", function(req, res){                                    /
     var ip = getIPFct(req);                                                    //Client IP address
     applog("Responded to /znewclient request from " + ip + ".");               //Log response
     var nick = req.body.nick;                                                  //Get the requested nick
-    
+
     clientstotal += 1;                                                         //Increment the client counter
     var id = clientstotal;                                                     //Put the client counter into an ID variable for readability
     clients.push({                                                             //Create the new client

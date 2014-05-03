@@ -4,18 +4,9 @@ var curchan = "#PesterchumOnline";                                             /
 
 window.onload = function() {
     "use strict";
-    var nick;
-    if(Modernizr.sessionstorage) {                                             //Check for HTML5 sessionStorage support
-        nick = sessionStorage.getItem("handle");                               //Get the handle you put in
-        sessionStorage.removeItem("handle");                                   //Empty the sessionStorage variable
-    } else {                                                                   //If no sessionStorage support
-        nick = window.name;                                                    //Use window.name
-        window.name = "";                                                      //Clear window.name
-    }
-
-    if(!nick || /^[a-z0-9]*[A-Z][a-z0-9]*$/.test(nick)===false) {              //If you went straight to the page or the handle doesn't validate
-        forcequit=true;                                                        //Force quit
-        window.location.replace("./");                                         //Back to index
+    var nick = document.URL.split("?nick=")[1];
+    if(nick.substr(0,9) === "override_") {
+        nick = nick.substr(9);
     }
 
     $("#mynick").html("You are "+nick+".");                                    //Your current nick
