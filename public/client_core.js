@@ -50,7 +50,7 @@ window.onload = function() {
         nick = nick.substr(9);
     }
 
-    $("#mynick").html("You are "+nick+".");                                    //Your current nick
+    $("#mynick").html(nick);                                                   //Your current nick
     $.post('./znewclient', {nick:nick}, function(data){                        //Request a new client from the server
         client = data;                                                         //Fill the returned client details into the client object
         ircUpdateFct();                                                        //Update
