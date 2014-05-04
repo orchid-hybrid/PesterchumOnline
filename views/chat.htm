@@ -2,21 +2,45 @@
 <html>
 <head>
     <title>Pesterchum Online</title>
+    <style>
+    #mynick {
+        font-weight: bold;
+    }
+
+    #content {
+        width: 500px;
+        height: 300px;
+        margin-bottom: 20px;
+        border: solid 1px #999999;
+        overflow-y: scroll;
+        font-family: Courier New;
+    }
+
+    #field {
+        width: 350px;
+    }
+
+    #joinfield {
+        width: 350px;
+        margin-left: 1px;
+    }
+    </style>
+
     <script src="/jquery.js"></script>
     <script src="/modernizr.js"></script>
     <script src="/client_core.js"></script>
 </head>
 <body>
-    <span id="mynick" style='font-weight:bold;'></span>
-    <div id="content" style='width: 500px; height: 300px; margin: 0 0 20px 0; border: solid 1px #999; overflow-y: scroll; font-family:Courier New;'>
+    <span id="mynick"></span>
+    <div id="content">
         Connecting to server...
     </div>
     <form>
         <select id='memoselect'></select>
-        <input type='text' style='width:350px;' id='field'>
+        <input type='text' id='field'>
         <input type='button' value='send' id='send'>
         <br>
-        #<input type='text' style='width:350px; margin-left:1px;' id='joinfield'>
+        #<input type='text' id='joinfield'>
         <input type='button' value='join' id='joinsend'>
     </form>
 </body>
