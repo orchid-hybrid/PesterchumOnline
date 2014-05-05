@@ -1,21 +1,21 @@
 //Environment setup
-var port = +process.env.PORT || 612;                                           //Use :612 if we're testing locally; environment port if we're live
-var express = require("express"),
+var port = +process.env.PORT || 612,                                           //Use :612 if we're testing locally; environment port if we're live
+    express = require("express"),
     irc = require("irc"),
     bodyParser = require("body-parser"),
     ejs = require('ejs'),
-    pjson = require("./package.json");
-var app = express();
+    pjson = require("./package.json"),
+    app = express(),
 
 //Declare some global variables
-var clientstotal = 0,                                                          //Client ID counter
+    clientstotal = 0,                                                          //Client ID counter
     clients = [null],                                                          //Client data objects (start with a null entry so the client counter lines up with the index of each client)
     connections = [],                                                          //IRC client objects
     clientlogs = [],                                                           //Client message logs
     pingchecks = [],                                                           //Ping update intervals
     Pesterchum = {                                                             //Pesterchum helper object
-    Messages: {}                                                               //Message emitters
-},
+        Messages: {}                                                           //Message emitters
+    },
     ip;
 
 function applog(text) {
