@@ -1,3 +1,11 @@
+1.1.0 (05/05/2014)
+==================
+Features:
+
+* Internal changes (cleaner CSS; general cleanup)
+* Style overhaul of chat page
+* Added license and changelog
+
 1.0.0 (03/05/2014)
 ==================
 Features:
