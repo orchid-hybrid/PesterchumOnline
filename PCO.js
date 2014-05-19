@@ -152,8 +152,8 @@ app.post("/zupdate", function(req, res){                                       /
 
 app.post("/zjoinmemo", function(req, res){                                     //Joining a memo
     "use strict";
-    var clientid = req.body.id;                                                //Get the client's ID
-    var memo;
+    var clientid = req.body.id,                                                //Get the client's ID
+        memo;
 
     if(req.body.memo[0] === "#") {                                             //If you prefixed the memo with a #
         memo = req.body.memo;                                                  //Get the requested memo
@@ -167,14 +167,16 @@ app.post("/zjoinmemo", function(req, res){                                     /
 
 app.post("/zsendmessage", function(req, res){                                  //Sending a message
     "use strict";
-    var clientid = req.body.id;                                                //Get the client's ID
-    var targ = req.body.memo;                                                  //Get the requested target
-    var message = req.body.message;                                            //Get the message
-    var handle = clients[clientid].nick;                                       //Get the client's handle
-    var prefix = Pesterchum.getPrefixFct(handle);                              //Get the client's prefix
-    var color = clients[clientid].color;
+    var clientid = req.body.id,                                                //Get the client's ID
+        targ = req.body.memo,                                                  //Get the requested target
+        message = req.body.message,                                            //Get the message
+        handle = clients[clientid].nick,                                       //Get the client's handle
+        color = clients[clientid].color,                                       //Get the client's text color
+        prefix;
 
-    message = "<c=" + color + ">" + prefix + ": " + message + "</c>";                //Compile actual message
+    prefix = Pesterchum.getPrefixFct(handle),                                  //Get the client's prefix
+
+    message = "<c=" + color + ">" + prefix + ": " + message + "</c>";          //Compile actual message
     connections[clientid].say(targ, message);                                  //Send the message
     var htmlmsg = "<span style='font-weight:bold'>" + targ + ": </span>" + message; //HTML Channel prefix - to be removed in favor of tabs
     clientlogs[clientid].push(htmlFormatFct(htmlmsg));                         //Add the message to the client log
@@ -184,23 +186,24 @@ app.post("/zsendmessage", function(req, res){                                  /
 
 app.post("/znewclient", function(req, res){                                    //Initial new client request
     "use strict";
+    var nick = req.body.nick,                                                  //Get the requested nick
+        id, config;
     ip = getIPFct(req);                                                        //Client IP address
     applog("Responded to /znewclient request from " + ip + ".");               //Log response
-    var nick = req.body.nick;                                                  //Get the requested nick
 
     clientstotal += 1;                                                         //Increment the client counter
-    var id = clientstotal;                                                     //Put the client counter into an ID variable for readability
-    clients.push({                                                             //Create the new client
-                  "id": id,                                                    //Unique ID
-                  "nick": nick,                                                //Handle
-                  "color": req.body.color,                                     //Text color
-//                "userName": "pco" + id,                                      //Username using ID
-                  "userName": "pcc31",                                         //Spoof Pesterchum client
-                  "realName": "pco" + id,                                      //Realname using ID - to be removed in favor of IP address or hostmask
-                  "missedpings": 0,                                            //Number of updates missed
-                  "channels": ["#pesterchum","#PesterchumOnline"]              //Initial channels
-                 });
-    var config = clients[id];
+    id = clientstotal;                                                         //Put the client counter into an ID variable for readability
+    config = {                                                                 //Create the new client
+      "id": id,                                                                //Unique ID
+      "nick": nick,                                                            //Handle
+      "color": req.body.color,                                                 //Text color
+//    "userName": "pco" + id,                                                  //Username using ID
+      "userName": "pcc31",                                                     //Spoof Pesterchum client
+      "realName": "pco" + id,                                                  //Realname using ID - to be removed in favor of IP address or hostmask
+      "missedpings": 0,                                                        //Number of updates missed
+      "channels": ["#pesterchum","#PesterchumOnline"]                          //Initial channels
+    };
+    clients.push(config);
     
     pingchecks[id] = setInterval(function(){                                   //Create a pingcheck interval for the new client
         clients[id].missedpings += 1;                                          //Increment the missed pings by one
@@ -208,7 +211,7 @@ app.post("/znewclient", function(req, res){                                    /
             killClientFct(id,"Ping timeout");                                  //Kill the client
             clearInterval(pingchecks[id]);                                     //Clear the interval
         }
-    },750);                                                                    //Checks for a ping every .75 seconds
+    }, 750);                                                                   //Checks for a ping every .75 seconds
     
     clientlogs[id] = [];                                                       //Create a log for the client
     
@@ -218,10 +221,11 @@ app.post("/znewclient", function(req, res){                                    /
         realName: config.realName
     });
     connections[id].addListener("message", function(from, to, text, message) {
-        var channel = message.args[0];                                         //Set the channel
-        var msgtext = message.args[1];                                         //Set the message text
-        
-        var lastchar = msgtext.charAt(msgtext.length - 1);                     //Get the last character of the message
+        var channel = message.args[0],                                         //Set the channel
+            msgtext = message.args[1],                                         //Set the message text
+            lastchar;
+
+        lastchar = msgtext.charAt(msgtext.length - 1);                         //Get the last character of the message
         if(lastchar !== " ") { msgtext += " "; }                               //If it's not a space, add a space. This solves IRC + chumdroid issues.
         
         msgtext = htmlFormatFct(msgtext);
