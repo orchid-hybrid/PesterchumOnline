@@ -172,8 +172,9 @@ app.post("/zsendmessage", function(req, res){                                  /
     var message = req.body.message;                                            //Get the message
     var handle = clients[clientid].nick;                                       //Get the client's handle
     var prefix = Pesterchum.getPrefixFct(handle);                              //Get the client's prefix
+    var color = clients[clientid].color;
 
-    message = "<c=255,0,0>" + prefix + ": " + message + "</c>";                //Compile actual message
+    message = "<c=" + color + ">" + prefix + ": " + message + "</c>";                //Compile actual message
     connections[clientid].say(targ, message);                                  //Send the message
     var htmlmsg = "<span style='font-weight:bold'>" + targ + ": </span>" + message; //HTML Channel prefix - to be removed in favor of tabs
     clientlogs[clientid].push(htmlFormatFct(htmlmsg));                         //Add the message to the client log
@@ -192,6 +193,7 @@ app.post("/znewclient", function(req, res){                                    /
     clients.push({                                                             //Create the new client
                   "id": id,                                                    //Unique ID
                   "nick": nick,                                                //Handle
+                  "color": req.body.color,                                     //Text color
 //                "userName": "pco" + id,                                      //Username using ID
                   "userName": "pcc31",                                         //Spoof Pesterchum client
                   "realName": "pco" + id,                                      //Realname using ID - to be removed in favor of IP address or hostmask

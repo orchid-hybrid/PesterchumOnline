@@ -51,9 +51,13 @@ window.onload = function() {
     }
 
     $("#mynick").html(nick);                                                   //Your current nick
-    $.post('./znewclient', {nick:nick}, function(data){                        //Request a new client from the server
+    $.post('./znewclient', {                                                   //Request a new client from the server
+        nick: nick,
+        color: "255,0,0"                                                       //Hardcoded color for now
+    }, function(data){
         client = data;                                                         //Fill the returned client details into the client object
         ircUpdateFct();                                                        //Update
+        $("#colorsquare").css("background-color", "rgb(" + client.color + ")"); //Text color
     });
     
     updateInterval = setInterval(function(){                                   //Automatic update
