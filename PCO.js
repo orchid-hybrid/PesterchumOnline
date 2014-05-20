@@ -49,6 +49,11 @@ function getIPFct(req) {
     return req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 }
 
+function denyRequestFct(reason) {
+    "use strict";
+    applog("Request denied (" + reason + ")");
+}
+
 function pad(num, len) {
     "use strict";
     return ("000000000000000" + num).slice(-len);                              //Add a bunch of zeroes to the front and slice from the end
@@ -161,14 +166,19 @@ app.post("/zjoinmemo", function(req, res){                                     /
     var clientid = req.body.id,                                                //Get the client's ID
         memo;
 
-    if(req.body.memo[0] === "#") {                                             //If you prefixed the memo with a #
-        memo = req.body.memo;                                                  //Get the requested memo
-    } else {                                                                   //If you didn't prefix the memo with a #
-        memo = "#" + req.body.memo;                                            //Get the requested memo and add the #
+    if(clients[clientid].ready) {
+        if(req.body.memo[0] === "#") {                                         //If you prefixed the memo with a #
+            memo = req.body.memo;                                              //Get the requested memo
+        } else {                                                               //If you didn't prefix the memo with a #
+            memo = "#" + req.body.memo;                                        //Get the requested memo and add the #
+        }
+        if(!debug.airplane) { connections[clientid].join(memo); }              //Join the requested memo
+        clients[clientid].channels.push(memo);                                 //Add the requested memo the client object's channel list
+        applog("Client " + clientid + " joined memo " + memo + ".");           //Log
+    } else {
+        applog("Client " + clientid + " attempted to join memo " + memo + "."); //Log
+        denyRequestFct("client was not ready");
     }
-    if(!debug.airplane) { connections[clientid].join(memo); }                  //Join the requested memo
-    clients[clientid].channels.push(memo);                                     //Add the requested memo the client object's channel list
-    applog("Client " + clientid + " joined memo " + memo + ".");               //Log
 });
 
 app.post("/zsendmessage", function(req, res){                                  //Sending a message
@@ -180,14 +190,18 @@ app.post("/zsendmessage", function(req, res){                                  /
         color = clients[clientid].color,                                       //Get the client's text color
         prefix;
 
-    prefix = Pesterchum.getPrefixFct(handle),                                  //Get the client's prefix
+    if(clients[clientid].ready) {
+        prefix = Pesterchum.getPrefixFct(handle);                              //Get the client's prefix
+        message = "<c=" + color + ">" + prefix + ": " + message + "</c>";      //Compile actual message
+        if(!debug.airplane) { connections[clientid].say(targ, message); }      //Send the message
+        var htmlmsg = "<span style='font-weight:bold'>" + targ + ": </span>" + message; //HTML Channel prefix - to be removed in favor of tabs
+        clientlogs[clientid].push(htmlFormatFct(htmlmsg));                     //Add the message to the client log
 
-    message = "<c=" + color + ">" + prefix + ": " + message + "</c>";          //Compile actual message
-    if(!debug.airplane) { connections[clientid].say(targ, message); }          //Send the message
-    var htmlmsg = "<span style='font-weight:bold'>" + targ + ": </span>" + message; //HTML Channel prefix - to be removed in favor of tabs
-    clientlogs[clientid].push(htmlFormatFct(htmlmsg));                         //Add the message to the client log
-
-    applog("Client " + clientid + " sent message \"" + message + "\" to memo " + targ + "."); //Log
+        applog("Client " + clientid + " sent message \"" + message + "\" to memo " + targ + "."); //Log
+    } else {
+        applog("Client " + clientid + " attempted to send message \"" + message + "\" to memo " + targ + "."); //Log
+        denyRequestFct("client was not ready");
+    }
 });
 
 app.post("/znewclient", function(req, res){                                    //Initial new client request
@@ -207,7 +221,8 @@ app.post("/znewclient", function(req, res){                                    /
       "userName": "pcc31",                                                     //Spoof Pesterchum client
       "realName": "pco" + id,                                                  //Realname using ID - to be removed in favor of IP address or hostmask
       "missedpings": 0,                                                        //Number of updates missed
-      "channels": ["#pesterchum","#PesterchumOnline"]                          //Initial channels
+      "channels": ["#pesterchum","#PesterchumOnline"],                         //Initial channels
+      "ready": false                                                           //Connection ready boolean
     };
     clients.push(config);
     
@@ -240,6 +255,9 @@ app.post("/znewclient", function(req, res){                                    /
             if(channel !== "#pesterchum" && msgtext.search("PESTERCHUM:TIME>")===-1) { //Ignore #pesterchum and PESTERCHUM:TIME messages
                 clientlogs[id].push("<span style='font-weight:bold'>" + channel + ": </span>" + msgtext); //HTML Channel prefix - to be removed in favor of tabs
             }
+        });
+        connections[id].addListener("registered", function() {
+            clients[id].ready = true;
         });
     }
     
