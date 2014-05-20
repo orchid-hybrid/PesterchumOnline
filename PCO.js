@@ -16,17 +16,21 @@ var port = +process.env.PORT || 612,                                           /
     Pesterchum = {                                                             //Pesterchum helper object
         Messages: {}                                                           //Message emitters
     },
+    debug = {
+        airplane: false,
+        suppressed: false
+    },
     ip;
 
 function applog(text) {
     "use strict";
-    console.log("  " + text);
+    if(!debug.suppressed) { console.log("  " + text) };
 }
 
 function killClientFct(id, reason) {
     "use strict";
     if(reason===undefined) { reason = "Quit"; }                                //If you didn't specify a reason, assume it was a normal quit
-    connections[id].disconnect(reason);                                        //Disconnect the client with the specified reason
+    if(!debug.airplane) { connections[id].disconnect(reason); }                //Disconnect the client with the specified reason
     applog("Killed client " + id + " (" + clients[id].nick + ") for reason " + reason + "."); //Log
 }
 
@@ -103,7 +107,9 @@ Pesterchum.Messages.mood = function(mood) {
     return "MOOD >0";                                                          //Default to chummy
 };
 
-console.log("PCO v" + pjson.version + " started.");                            //Log startup
+if(!debug.suppressed) {
+    console.log("PCO v" + pjson.version + " started.");                            //Log startup
+}
 
 //Setting stuff up
 app.engine('htm', ejs.renderFile);
@@ -160,7 +166,7 @@ app.post("/zjoinmemo", function(req, res){                                     /
     } else {                                                                   //If you didn't prefix the memo with a #
         memo = "#" + req.body.memo;                                            //Get the requested memo and add the #
     }
-    connections[clientid].join(memo);                                          //Join the requested memo
+    if(!debug.airplane) { connections[clientid].join(memo); }                  //Join the requested memo
     clients[clientid].channels.push(memo);                                     //Add the requested memo the client object's channel list
     applog("Client " + clientid + " joined memo " + memo + ".");               //Log
 });
@@ -177,7 +183,7 @@ app.post("/zsendmessage", function(req, res){                                  /
     prefix = Pesterchum.getPrefixFct(handle),                                  //Get the client's prefix
 
     message = "<c=" + color + ">" + prefix + ": " + message + "</c>";          //Compile actual message
-    connections[clientid].say(targ, message);                                  //Send the message
+    if(!debug.airplane) { connections[clientid].say(targ, message); }          //Send the message
     var htmlmsg = "<span style='font-weight:bold'>" + targ + ": </span>" + message; //HTML Channel prefix - to be removed in favor of tabs
     clientlogs[clientid].push(htmlFormatFct(htmlmsg));                         //Add the message to the client log
 
@@ -215,25 +221,27 @@ app.post("/znewclient", function(req, res){                                    /
     
     clientlogs[id] = [];                                                       //Create a log for the client
     
-    connections[id] = new irc.Client("irc.mindfang.org", nick, {               //Connect to the server
-        channels: config.channels,
-        userName: config.userName,
-        realName: config.realName
-    });
-    connections[id].addListener("message", function(from, to, text, message) {
-        var channel = message.args[0],                                         //Set the channel
-            msgtext = message.args[1],                                         //Set the message text
-            lastchar;
+    if(!debug.airplane) {
+        connections[id] = new irc.Client("irc.mindfang.org", nick, {           //Connect to the server
+            channels: config.channels,
+            userName: config.userName,
+            realName: config.realName
+        });
+        connections[id].addListener("message", function(from, to, text, message) {
+            var channel = message.args[0],                                     //Set the channel
+                msgtext = message.args[1],                                     //Set the message text
+                lastchar;
 
-        lastchar = msgtext.charAt(msgtext.length - 1);                         //Get the last character of the message
-        if(lastchar !== " ") { msgtext += " "; }                               //If it's not a space, add a space. This solves IRC + chumdroid issues.
-        
-        msgtext = htmlFormatFct(msgtext);
-        
-        if(channel !== "#pesterchum" && msgtext.search("PESTERCHUM:TIME>")===-1) { //Ignore #pesterchum and PESTERCHUM:TIME messages
-            clientlogs[id].push("<span style='font-weight:bold'>" + channel + ": </span>" + msgtext); //HTML Channel prefix - to be removed in favor of tabs
-        }
-    });
+            lastchar = msgtext.charAt(msgtext.length - 1);                     //Get the last character of the message
+            if(lastchar !== " ") { msgtext += " "; }                           //If it's not a space, add a space. This solves IRC + chumdroid issues.
+            
+            msgtext = htmlFormatFct(msgtext);
+            
+            if(channel !== "#pesterchum" && msgtext.search("PESTERCHUM:TIME>")===-1) { //Ignore #pesterchum and PESTERCHUM:TIME messages
+                clientlogs[id].push("<span style='font-weight:bold'>" + channel + ": </span>" + msgtext); //HTML Channel prefix - to be removed in favor of tabs
+            }
+        });
+    }
     
     res.send(config);                                                          //Give the client its object
     applog("Created new client with ID of " + clientstotal + " and handle of " + nick + ".");

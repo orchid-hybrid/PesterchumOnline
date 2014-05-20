@@ -63,7 +63,7 @@ The client transmits its ID, the message, and the memo to which to send the mess
 
 ##Development guidelines  
 ###Writing code  
-Do your best to maintain consistency with the rest of the code - indents are done with four spaces, all same-line comments are indented to column 80, and `"use strict";` should be used everywhere. If you're not sure about how to do something from a stylistic standpoint, [submit an issue](https://github.com/Hydrothermal/PesterchumOnline/issues/new) with the question tag or just go what you feel is best and it'll be fixed during the next code cleanup.
+Do your best to maintain consistency with the rest of the code - indents are done with four spaces, all same-line comments are indented to column 80, and `"use strict";` should be used everywhere. If you're not sure about how to do something from a stylistic standpoint, [submit an issue](https://github.com/Hydrothermal/PesterchumOnline/issues/new) with the question tag or just go what you feel is best and it'll be fixed during the next code cleanup. Use the `debug.airplane` switch to work on non-connection things without actually connecting to the server.
 
 ###Committing and pushing 
 Push all work to the `dev` branch - `master` is for releases only. Release version numbering follows a MAJOR.MINOR.PATCH model, roughly defined below:
