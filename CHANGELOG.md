@@ -1,3 +1,13 @@
+1.1.1 (21/05/2014)
+==================
+Features:
+
+* Color square for indicating text color
+
+Bugfixes:
+
+* Fixed the server crashing when the client made calls too quickly
+
 1.1.0 (05/05/2014)
 ==================
 Features:
