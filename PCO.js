@@ -208,7 +208,29 @@ app.post("/zchangecolor", function(req, res){                                  /
     "use strict";
     var clientid = req.body.id;                                                //Get the client's ID
     var color = req.body.color;                                                //Get the requested color
-    clients[clientid].color = color;                                           //Reset the client's missed pings to 0
+    clients[clientid].color = color;                                           //Change the client's color
+});
+
+app.post("/zchangenick", function(req, res){                                   //Color change
+    "use strict";
+    var clientid = req.body.id;                                                //Get the client's ID
+    var nick = req.body.nick,                                                  //Get the requested nick
+        override = nick.substr(0,9) === "override_";                           //Override prefix
+
+    if(!Pesterchum.validateHandleFct(nick) && !override) {                     //Check to see if the handle fails validation
+        ip = getIPFct(req);                                                    //Client IP address
+        applog("Rejected invalid handle request from " + ip + ".");            //Log rejection
+        res.send(false);                                                       //Tell the client
+        return false;                                                          //Stop processing
+    }
+
+    if(nick.substr(0,9) === "override_") {
+        nick = nick.substr(9);
+    }
+    
+    clients[clientid].nick = nick;                                             //Change the client's nick
+    connections[clientid].send("NICK", nick);                                  //Send the nick change to the server
+    res.send(true);                                                            //Tell the client
 });
 
 app.post("/znewclient", function(req, res){                                    //Initial new client request

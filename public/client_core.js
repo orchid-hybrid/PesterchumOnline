@@ -19,6 +19,7 @@ function ircUpdateFct() {
         }
         $("#memoselect").html(memolist);                                       //Put option tag HTML into the dropdown
         $("#colorsquare").css("background-color", "rgb(" + client.color + ")"); //Text color
+        $("#mynick").html(client.nick);                                        //Nick
     }).error(function() {                                                      //If the server isn't responding
         forcequit = true;                                                      //Force a quit
         location.reload();                                                     //Reload to try and request the page again
@@ -88,6 +89,30 @@ window.onload = function() {
                 });
                 ircUpdateFct();                                                //Force update
                 return false;
+            }
+        });
+
+        $("#mynick").click(function() {
+            var newnick = prompt("New nick:");                                 //Change this to a floaty div thing at some point
+            if(!newnick) { return false; }                                     //Stop if you clicked cancel
+            var valhandle = /^[a-z0-9]*[A-Z][a-z0-9]*$/.test(newnick),         //Validate the new nick
+                override = newnick.substr(0,9) === "override_";                //Override prefix
+            
+            if(valhandle || override) {
+                $.post('./zchangenick', {
+                    id: client.id,
+                    nick: newnick
+                }, function(success) {
+                    if(success) {
+                        ircUpdateFct();
+                    } else {
+                        //Rejection alert
+                        alert("That is not a valid chumhandle.\nA chumhandle must not start with a capital letter, have a single capital letter, and contain only alphanumeric characters.");
+                    }
+                });
+            } else {
+                //Rejection alert
+                alert("That is not a valid chumhandle.\nA chumhandle must not start with a capital letter, have a single capital letter, and contain only alphanumeric characters.");
             }
         });
     });
