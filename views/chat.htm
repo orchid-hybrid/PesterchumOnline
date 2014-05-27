@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Pesterchum Online</title>
+    <link rel="stylesheet" type="text/css" href="/colorpicker/colorpicker.css">
     <style>
     html,body {
         background-color: #FAF0DA;
@@ -63,12 +64,17 @@
         height: 21px;
         top: 246px;
         left: 196px;
+        background: url("/colorsquare_shadow.png") center no-repeat;
+    }
+    #colorsquare:active {
+        background: url("/colorsquare_depressed.png") center no-repeat;
     }
     </style>
 
     <script src="/jquery.js"></script>
     <script src="/modernizr.js"></script>
     <script src="/client_core.js"></script>
+    <script src="/colorpicker/colorpicker.js"></script>
 </head>
 <body>
     <div id="main">

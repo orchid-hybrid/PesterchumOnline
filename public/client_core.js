@@ -18,6 +18,7 @@ function ircUpdateFct() {
             }
         }
         $("#memoselect").html(memolist);                                       //Put option tag HTML into the dropdown
+        $("#colorsquare").css("background-color", "rgb(" + client.color + ")"); //Text color
     }).error(function() {                                                      //If the server isn't responding
         forcequit = true;                                                      //Force a quit
         location.reload();                                                     //Reload to try and request the page again
@@ -55,9 +56,40 @@ window.onload = function() {
         nick: nick,
         color: "255,0,0"                                                       //Hardcoded color for now
     }, function(data){
+        var rgb, r, g, b, hex;
         client = data;                                                         //Fill the returned client details into the client object
         ircUpdateFct();                                                        //Update
-        $("#colorsquare").css("background-color", "rgb(" + client.color + ")"); //Text color
+
+        //Convert RGB text color to hex
+        rgb = client.color.split(",");                                         //Split commas
+        r = parseInt(rgb[0], 10);                                              //Convert to integer
+        g = parseInt(rgb[1], 10);                                              //Convert to integer
+        b = parseInt(rgb[2], 10);                                              //Convert to integer
+        hex = "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1); //Bitwise ops and hash prefix
+        $("#colorsquare").css("background-color", hex); //Set colorsquare
+        
+        $("#colorsquare").ColorPicker({
+            color: hex,
+            onShow: function (colpkr) {
+                $(colpkr).fadeIn(150);
+                return false;
+            },
+            onHide: function(colpkr) {
+                $(colpkr).fadeOut(150);
+                return false;
+            },
+            onSubmit: function(hsb, hex, rgb, obj, colpkr) {
+                var rgb = rgb.r + "," + rgb.g + "," + rgb.b;
+                $("#colorsquare").css("background-color", "rgb(" + rgb + ")");
+                $(colpkr).fadeOut(150);
+                $.post('./zchangecolor', {
+                    id: client.id,
+                    color: rgb
+                });
+                ircUpdateFct();                                                //Force update
+                return false;
+            }
+        });
     });
     
     updateInterval = setInterval(function(){                                   //Automatic update
