@@ -269,7 +269,8 @@ app.post("/znewclient", function(req, res){                                    /
         connections[id] = new irc.Client("irc.mindfang.org", nick, {           //Connect to the server
             channels: config.channels,
             userName: config.userName,
-            realName: config.realName
+            realName: config.realName,
+            autoRejoin: false
         });
         connections[id].addListener("message", function(from, to, text, message) {
             var channel = message.args[0],                                     //Set the channel
