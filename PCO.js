@@ -289,6 +289,16 @@ app.post("/znewclient", function(req, res){                                    /
         connections[id].addListener("registered", function() {
             clients[id].ready = true;
         });
+        connections[id].addListener("join", function(channel, who) {
+            if(channel !== "#pesterchum" && who !== clients[id].nick) {
+                clientlogs[id].push(who + " joined " + channel + ".");
+            }
+        });
+        connections[id].addListener("part", function(channel, who) {
+            if(channel !== "#pesterchum" && who !== clients[id].nick) {
+                clientlogs[id].push(who + " left " + channel + ".");
+            }
+        });
     }
     
     res.send(config);                                                          //Give the client its object
