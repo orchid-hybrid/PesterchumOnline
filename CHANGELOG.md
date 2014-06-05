@@ -1,3 +1,13 @@
+1.2.0 (05/06/2014)
+==================
+Features:
+
+* Changing color and nick are now possible
+
+Bugfixes:
+
+* Fixed the client rejoining memos after being kicked
+
 1.1.1 (21/05/2014)
 ==================
 Features:
