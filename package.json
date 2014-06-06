@@ -1,8 +1,8 @@
 {
     "name": "PesterchumOnline",
     "author": "Hydrothermal",
-    "version": "1.0.0",
-    "description": "Pesterchum Online",
+    "version": "1.2.1",
+    "description": "A browser-based client for the Pesterchum IRC network",
     "dependencies": {
         "irc": "latest",
         "express": "latest",
@@ -12,5 +12,7 @@
     "repository": {
         "type": "git",
         "url": "https://github.com/Hydrothermal/PesterchumOnline"
-    }
+    },
+    "bugs": "https://github.com/Hydrothermal/PesterchumOnline/issues",
+    "license": "GPL-3.0"
 }
