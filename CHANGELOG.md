@@ -1,3 +1,9 @@
+1.2.1 (05/06/2014)
+==================
+Features:
+
+* Added messages for users joining and parting from memos
+
 1.2.0 (05/06/2014)
 ==================
 Features:
