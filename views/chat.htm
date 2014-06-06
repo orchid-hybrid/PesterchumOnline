@@ -2,21 +2,101 @@
 <html>
 <head>
     <title>Pesterchum Online</title>
+    <link rel="stylesheet" type="text/css" href="/colorpicker/colorpicker.css">
+    <style>
+    html,body {
+        background-color: #FAF0DA;
+        margin: 5px;
+    }
+
+    #main {
+        display: inline-block;
+        background-color: #FFB500;
+        padding: 5px;
+        border: 2px solid #FFF700;
+        -webkit-border-radius: 5px;
+        -moz-border-radius: 5px;
+        border-radius: 5px;
+    }
+
+    #mynick {
+        position: absolute;
+        top: 246px;
+        left: 37px;
+        color: #FFFFFF;
+        font-family: "Courier New";
+        font-size: 11px;
+        padding: 3px;
+        cursor: pointer;
+    }
+    #mynick:active {
+        color: #CCCCCC;
+    }
+
+    #content {
+        width: 500px;
+        height: 300px;
+        margin-bottom: 10px;
+        border: solid 1px #999999;
+        overflow-y: scroll;
+        font-family: "Courier New";
+        background-color: #F8E2B1;
+        padding-left: 2px;
+    }
+
+    #field {
+        width: 350px;
+    }
+
+    #joinfield {
+        width: 350px;
+        margin-left: 1px;
+    }
+
+    #pc-ui {
+        background-image: url("/pcbg.png");
+        width: 232px;
+        height: 380px;
+        position: absolute;
+        right: 10px;
+        bottom: 10px;
+    }
+
+    #colorsquare {
+        position: absolute;
+        width: 23px;
+        height: 21px;
+        top: 246px;
+        left: 196px;
+        background: url("/colorsquare_shadow.png") center no-repeat;
+    }
+    #colorsquare:active {
+        background: url("/colorsquare_depressed.png") center no-repeat;
+    }
+    </style>
+
     <script src="/jquery.js"></script>
     <script src="/modernizr.js"></script>
     <script src="/client_core.js"></script>
+    <script src="/colorpicker/colorpicker.js"></script>
 </head>
 <body>
-    <span id="mynick" style='font-weight:bold;'></span>
-    <div id="content" style='width: 500px; height: 300px; margin: 0 0 20px 0; border: solid 1px #999; overflow-y: scroll; font-family:Courier New;'>
-        Connecting to server...
+    <div id="main">
+        <div id="content">
+            Connecting to server...
+        </div>
+        <form>
+            <select id='memoselect'></select>
+            <input type='text' id='field'>
+            <input type='button' value='send' id='send'>
+            <br>
+            #<input type='text' id='joinfield'>
+            <input type='button' value='join' id='joinsend'>
+        </form>
     </div>
-    <form>
-        <select id='memoselect'></select>
-        <input type='text' style='width:350px;' id='field'>
-        <input type='button' value='send' id='send'>
-        <br>
-        #<input type='text' style='width:350px; margin-left:1px;' id='joinfield'>
-        <input type='button' value='join' id='joinsend'>
-    </form>
+
+    <div id="pc-ui">
+        <span id="mynick"></span>
+        <div id="colorsquare"></div>
+    </div>
 </body>

@@ -1,32 +1,36 @@
 //Environment setup
-var port = +process.env.PORT || 612;                                           //Use :612 if we're testing locally; environment port if we're live
-var express = require("express"),
+var port = +process.env.PORT || 612,                                           //Use :612 if we're testing locally; environment port if we're live
+    express = require("express"),
     irc = require("irc"),
     bodyParser = require("body-parser"),
     ejs = require('ejs'),
-    pjson = require("./package.json");
-var app = express();
+    pjson = require("./package.json"),
+    app = express(),
 
 //Declare some global variables
-var clientstotal = 0,                                                          //Client ID counter
+    clientstotal = 0,                                                          //Client ID counter
     clients = [null],                                                          //Client data objects (start with a null entry so the client counter lines up with the index of each client)
     connections = [],                                                          //IRC client objects
     clientlogs = [],                                                           //Client message logs
     pingchecks = [],                                                           //Ping update intervals
     Pesterchum = {                                                             //Pesterchum helper object
-    Messages: {}                                                               //Message emitters
-},
+        Messages: {}                                                           //Message emitters
+    },
+    debug = {
+        airplane: false,
+        suppressed: false
+    },
     ip;
 
 function applog(text) {
     "use strict";
-    console.log("  " + text);
+    if(!debug.suppressed) { console.log("  " + text) };
 }
 
 function killClientFct(id, reason) {
     "use strict";
     if(reason===undefined) { reason = "Quit"; }                                //If you didn't specify a reason, assume it was a normal quit
-    connections[id].disconnect(reason);                                        //Disconnect the client with the specified reason
+    if(!debug.airplane) { connections[id].disconnect(reason); }                //Disconnect the client with the specified reason
     applog("Killed client " + id + " (" + clients[id].nick + ") for reason " + reason + "."); //Log
 }
 
@@ -43,6 +47,11 @@ function htmlFormatFct(message) {
 function getIPFct(req) {
     "use strict";
     return req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+}
+
+function denyRequestFct(reason) {
+    "use strict";
+    applog("Request denied (" + reason + ")");
 }
 
 function pad(num, len) {
@@ -103,7 +112,9 @@ Pesterchum.Messages.mood = function(mood) {
     return "MOOD >0";                                                          //Default to chummy
 };
 
-console.log("PCO v" + pjson.version + " started.");                            //Log startup
+if(!debug.suppressed) {
+    console.log("PCO v" + pjson.version + " started.");                            //Log startup
+}
 
 //Setting stuff up
 app.engine('htm', ejs.renderFile);
@@ -152,53 +163,97 @@ app.post("/zupdate", function(req, res){                                       /
 
 app.post("/zjoinmemo", function(req, res){                                     //Joining a memo
     "use strict";
-    var clientid = req.body.id;                                                //Get the client's ID
-    var memo;
+    var clientid = req.body.id,                                                //Get the client's ID
+        memo;
 
-    if(req.body.memo[0] === "#") {                                             //If you prefixed the memo with a #
-        memo = req.body.memo;                                                  //Get the requested memo
-    } else {                                                                   //If you didn't prefix the memo with a #
-        memo = "#" + req.body.memo;                                            //Get the requested memo and add the #
+    if(clients[clientid].ready) {
+        if(req.body.memo[0] === "#") {                                         //If you prefixed the memo with a #
+            memo = req.body.memo;                                              //Get the requested memo
+        } else {                                                               //If you didn't prefix the memo with a #
+            memo = "#" + req.body.memo;                                        //Get the requested memo and add the #
+        }
+        if(!debug.airplane) { connections[clientid].join(memo); }              //Join the requested memo
+        clients[clientid].channels.push(memo);                                 //Add the requested memo the client object's channel list
+        applog("Client " + clientid + " joined memo " + memo + ".");           //Log
+    } else {
+        applog("Client " + clientid + " attempted to join memo " + memo + "."); //Log
+        denyRequestFct("client was not ready");
     }
-    connections[clientid].join(memo);                                          //Join the requested memo
-    clients[clientid].channels.push(memo);                                     //Add the requested memo the client object's channel list
-    applog("Client " + clientid + " joined memo " + memo + ".");               //Log
 });
 
 app.post("/zsendmessage", function(req, res){                                  //Sending a message
     "use strict";
+    var clientid = req.body.id,                                                //Get the client's ID
+        targ = req.body.memo,                                                  //Get the requested target
+        message = req.body.message,                                            //Get the message
+        handle = clients[clientid].nick,                                       //Get the client's handle
+        color = clients[clientid].color,                                       //Get the client's text color
+        prefix;
+
+    if(clients[clientid].ready) {
+        prefix = Pesterchum.getPrefixFct(handle);                              //Get the client's prefix
+        message = "<c=" + color + ">" + prefix + ": " + message + "</c>";      //Compile actual message
+        if(!debug.airplane) { connections[clientid].say(targ, message); }      //Send the message
+        var htmlmsg = "<span style='font-weight:bold'>" + targ + ": </span>" + message; //HTML Channel prefix - to be removed in favor of tabs
+        clientlogs[clientid].push(htmlFormatFct(htmlmsg));                     //Add the message to the client log
+
+        applog("Client " + clientid + " sent message \"" + message + "\" to memo " + targ + "."); //Log
+    } else {
+        applog("Client " + clientid + " attempted to send message \"" + message + "\" to memo " + targ + "."); //Log
+        denyRequestFct("client was not ready");
+    }
+});
+
+app.post("/zchangecolor", function(req, res){                                  //Color change
+    "use strict";
     var clientid = req.body.id;                                                //Get the client's ID
-    var targ = req.body.memo;                                                  //Get the requested target
-    var message = req.body.message;                                            //Get the message
-    var handle = clients[clientid].nick;                                       //Get the client's handle
-    var prefix = Pesterchum.getPrefixFct(handle);                              //Get the client's prefix
+    var color = req.body.color;                                                //Get the requested color
+    clients[clientid].color = color;                                           //Change the client's color
+});
 
-    message = "<c=255,0,0>" + prefix + ": " + message + "</c>";                //Compile actual message
-    connections[clientid].say(targ, message);                                  //Send the message
-    var htmlmsg = "<span style='font-weight:bold'>" + targ + ": </span>" + message; //HTML Channel prefix - to be removed in favor of tabs
-    clientlogs[clientid].push(htmlFormatFct(htmlmsg));                         //Add the message to the client log
+app.post("/zchangenick", function(req, res){                                   //Color change
+    "use strict";
+    var clientid = req.body.id;                                                //Get the client's ID
+    var nick = req.body.nick,                                                  //Get the requested nick
+        override = nick.substr(0,9) === "override_";                           //Override prefix
 
-    applog("Client " + clientid + " sent message \"" + message + "\" to memo " + targ + "."); //Log
+    if(!Pesterchum.validateHandleFct(nick) && !override) {                     //Check to see if the handle fails validation
+        ip = getIPFct(req);                                                    //Client IP address
+        applog("Rejected invalid handle request from " + ip + ".");            //Log rejection
+        res.send(false);                                                       //Tell the client
+        return false;                                                          //Stop processing
+    }
+
+    if(nick.substr(0,9) === "override_") {
+        nick = nick.substr(9);
+    }
+    
+    clients[clientid].nick = nick;                                             //Change the client's nick
+    connections[clientid].send("NICK", nick);                                  //Send the nick change to the server
+    res.send(true);                                                            //Tell the client
 });
 
 app.post("/znewclient", function(req, res){                                    //Initial new client request
     "use strict";
+    var nick = req.body.nick,                                                  //Get the requested nick
+        id, config;
     ip = getIPFct(req);                                                        //Client IP address
     applog("Responded to /znewclient request from " + ip + ".");               //Log response
-    var nick = req.body.nick;                                                  //Get the requested nick
 
     clientstotal += 1;                                                         //Increment the client counter
-    var id = clientstotal;                                                     //Put the client counter into an ID variable for readability
-    clients.push({                                                             //Create the new client
-                  "id": id,                                                    //Unique ID
-                  "nick": nick,                                                //Handle
-//                "userName": "pco" + id,                                      //Username using ID
-                  "userName": "pcc31",                                         //Spoof Pesterchum client
-                  "realName": "pco" + id,                                      //Realname using ID - to be removed in favor of IP address or hostmask
-                  "missedpings": 0,                                            //Number of updates missed
-                  "channels": ["#pesterchum","#PesterchumOnline"]              //Initial channels
-                 });
-    var config = clients[id];
+    id = clientstotal;                                                         //Put the client counter into an ID variable for readability
+    config = {                                                                 //Create the new client
+      "id": id,                                                                //Unique ID
+      "nick": nick,                                                            //Handle
+      "color": req.body.color,                                                 //Text color
+//    "userName": "pco" + id,                                                  //Username using ID
+      "userName": "pcc31",                                                     //Spoof Pesterchum client
+      "realName": "pco" + id,                                                  //Realname using ID - to be removed in favor of IP address or hostmask
+      "missedpings": 0,                                                        //Number of updates missed
+      "channels": ["#pesterchum","#PesterchumOnline"],                         //Initial channels
+      "ready": false                                                           //Connection ready boolean
+    };
+    clients.push(config);
     
     pingchecks[id] = setInterval(function(){                                   //Create a pingcheck interval for the new client
         clients[id].missedpings += 1;                                          //Increment the missed pings by one
@@ -206,28 +261,45 @@ app.post("/znewclient", function(req, res){                                    /
             killClientFct(id,"Ping timeout");                                  //Kill the client
             clearInterval(pingchecks[id]);                                     //Clear the interval
         }
-    },750);                                                                    //Checks for a ping every .75 seconds
+    }, 750);                                                                   //Checks for a ping every .75 seconds
     
     clientlogs[id] = [];                                                       //Create a log for the client
     
-    connections[id] = new irc.Client("irc.mindfang.org", nick, {               //Connect to the server
-        channels: config.channels,
-        userName: config.userName,
-        realName: config.realName
-    });
-    connections[id].addListener("message", function(from, to, text, message) {
-        var channel = message.args[0];                                         //Set the channel
-        var msgtext = message.args[1];                                         //Set the message text
-        
-        var lastchar = msgtext.charAt(msgtext.length - 1);                     //Get the last character of the message
-        if(lastchar !== " ") { msgtext += " "; }                               //If it's not a space, add a space. This solves IRC + chumdroid issues.
-        
-        msgtext = htmlFormatFct(msgtext);
-        
-        if(channel !== "#pesterchum" && msgtext.search("PESTERCHUM:TIME>")===-1) { //Ignore #pesterchum and PESTERCHUM:TIME messages
-            clientlogs[id].push("<span style='font-weight:bold'>" + channel + ": </span>" + msgtext); //HTML Channel prefix - to be removed in favor of tabs
-        }
-    });
+    if(!debug.airplane) {
+        connections[id] = new irc.Client("irc.mindfang.org", nick, {           //Connect to the server
+            channels: config.channels,
+            userName: config.userName,
+            realName: config.realName,
+            autoRejoin: false
+        });
+        connections[id].addListener("message", function(from, to, text, message) {
+            var channel = message.args[0],                                     //Set the channel
+                msgtext = message.args[1],                                     //Set the message text
+                lastchar;
+
+            lastchar = msgtext.charAt(msgtext.length - 1);                     //Get the last character of the message
+            if(lastchar !== " ") { msgtext += " "; }                           //If it's not a space, add a space. This solves IRC + chumdroid issues.
+            
+            msgtext = htmlFormatFct(msgtext);
+            
+            if(channel !== "#pesterchum" && msgtext.search("PESTERCHUM:TIME>")===-1) { //Ignore #pesterchum and PESTERCHUM:TIME messages
+                clientlogs[id].push("<span style='font-weight:bold'>" + channel + ": </span>" + msgtext); //HTML Channel prefix - to be removed in favor of tabs
+            }
+        });
+        connections[id].addListener("registered", function() {
+            clients[id].ready = true;
+        });
+        connections[id].addListener("join", function(channel, who) {
+            if(channel !== "#pesterchum" && who !== clients[id].nick) {
+                clientlogs[id].push(who + " joined " + channel + ".");
+            }
+        });
+        connections[id].addListener("part", function(channel, who) {
+            if(channel !== "#pesterchum" && who !== clients[id].nick) {
+                clientlogs[id].push(who + " left " + channel + ".");
+            }
+        });
+    }
     
     res.send(config);                                                          //Give the client its object
     applog("Created new client with ID of " + clientstotal + " and handle of " + nick + ".");

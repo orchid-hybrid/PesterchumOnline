@@ -1,6 +1,6 @@
 Pesterchum Online
 ================
-This is the repository for Pesterchum Online, a browser-based client for the Pesterchum IRC network. It runs off NodeJS, using the NodeIRC library. Express and EJS are used for serving pages.
+This is the repository for Pesterchum Online, a browser-based client for the Pesterchum IRC network. It runs off NodeJS, using the NodeIRC library. Express and EJS are used for serving pages. All code in this repository is licensed under the GNU General Public License v3 - read more about it [here](https://www.gnu.org/copyleft/gpl.html) or in the [License section](#license) of this readme.
 
 ##Getting started  
 PCO uses NodeJS - if you haven't installed that yet, [do so](http://nodejs.org/download/).  
@@ -60,5 +60,23 @@ The client transmits its ID, the message, and the memo to which to send the mess
 * Uses the client's ID to have the corresponding IRC connection send the message to the memo
 * Replaces color tags and special characters using `htmlFormatFct()`
 * Pushes the formatted message to the `clientlogs` array corresponding to the client
+
+##Development guidelines  
+###Writing code  
+Do your best to maintain consistency with the rest of the code - indents are done with four spaces, all same-line comments are indented to column 80, and `"use strict";` should be used everywhere. If you're not sure about how to do something from a stylistic standpoint, [submit an issue](https://github.com/Hydrothermal/PesterchumOnline/issues/new) with the question tag or just go what you feel is best and it'll be fixed during the next code cleanup. Use the `debug.airplane` switch to work on non-connection things without actually connecting to the server.
+
+###Committing and pushing 
+Push all work to the `dev` branch - `master` is for releases only. Release version numbering follows a MAJOR.MINOR.PATCH model, roughly defined below:
+
+* **Major version**: A release involving multiple features and significant changes - this is likely to break any third-party programs that relied on the old structure. Heavy testing should go into the entire application before releasing a major version.
+* **Minor version**: A release involving one or few features/changes, and not likely to break third-party programs. At least heavy unit testing should go into the areas changed in a minor version release.
+* **Patch**: A bugfix or extremely minor feature unlikely to break anything or change any sections of the application outside of the patched areas. Heavy testing is probably not necessary, especially because most patches should be rolled out as quickly as possible.
+
+When pushing work, make sure to include a concise description of your changes in your commit message. If it seems like a good idea to expound on your changes or explain why they were made, add a comment to the commit. If your changes are significant enough to be important to other developers or tucked-away enough that it's not immediately obvious, updated the technical overview in `README.md` with the appropriate information. Include your changes in the changelog section for the current version when pushing.
+
+**Do not ever use `--force`/`-f` when pushing a commit unless you are forcing your own commit AND are doing it within under a minute of the original push. It's understandable that forcing a push sometimes comes in handy if you're fixing a very minor mistake that you already pushed, but doing so when your commit has already been up for a while gets confusing, and overwriting somebody else's commit is right out. Review your code thoroughly before pushing.**
+
+###License  
+Pesterchum Online uses the GNU GPL-3 license - basically, you can copy, distribute, and modify any code as long as you track your changes, license all redistributions under GPL, and link back to the original ([this repo](https://github.com/Hydrothermal/PesterchumOnline)). You can distribute commercially, but you have to keep the source code open. You can't hold me or any other developers liable for any damages you incur related to the code or this project.
 
 ####This readme is a WIP and will be updated as progress is made.
