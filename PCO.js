@@ -6,10 +6,11 @@ var port = +process.env.PORT || 612,                                           /
     ejs = require('ejs'),
     pjson = require("./package.json"),
     app = express(),
+    crypto = require('crypto'),
 
 //Declare some global variables
     clientstotal = 0,                                                          //Client ID counter
-    clients = [null],                                                          //Client data objects (start with a null entry so the client counter lines up with the index of each client)
+    clients = {},                                                              //Client data objects
     connections = [],                                                          //IRC client objects
     clientlogs = [],                                                           //Client message logs
     pingchecks = [],                                                           //Ping update intervals
@@ -31,7 +32,7 @@ function killClientFct(id, reason) {
     "use strict";
     if(reason===undefined) { reason = "Quit"; }                                //If you didn't specify a reason, assume it was a normal quit
     if(!debug.airplane) { connections[id].disconnect(reason); }                //Disconnect the client with the specified reason
-    applog("Killed client " + id + " (" + clients[id].nick + ") for reason " + reason + "."); //Log
+    applog("Killed client " + CIDFct(id) + " for reason " + reason + "."); //Log
 }
 
 function htmlFormatFct(message) {
@@ -57,6 +58,10 @@ function denyRequestFct(reason) {
 function pad(num, len) {
     "use strict";
     return ("000000000000000" + num).slice(-len);                              //Add a bunch of zeroes to the front and slice from the end
+}
+
+function CIDFct(id) {
+    return "[" + id.substr(0, 8) + "] (" + clients[id].nick + ")";
 }
 
 Pesterchum.getPrefixFct = function(handle) {
@@ -174,9 +179,9 @@ app.post("/zjoinmemo", function(req, res){                                     /
         }
         if(!debug.airplane) { connections[clientid].join(memo); }              //Join the requested memo
         clients[clientid].channels.push(memo);                                 //Add the requested memo the client object's channel list
-        applog("Client " + clientid + " joined memo " + memo + ".");           //Log
+        applog("Client " + CIDFct(clientid) + " joined memo " + memo + ".");   //Log
     } else {
-        applog("Client " + clientid + " attempted to join memo " + memo + "."); //Log
+        applog("Client " + CIDFct(clientid) + " attempted to join memo " + memo + "."); //Log
         denyRequestFct("client was not ready");
     }
 });
@@ -197,9 +202,9 @@ app.post("/zsendmessage", function(req, res){                                  /
         var htmlmsg = "<span style='font-weight:bold'>" + targ + ": </span>" + message; //HTML Channel prefix - to be removed in favor of tabs
         clientlogs[clientid].push(htmlFormatFct(htmlmsg));                     //Add the message to the client log
 
-        applog("Client " + clientid + " sent message \"" + message + "\" to memo " + targ + "."); //Log
+        applog("Client " + CIDFct(clientid) + " sent message \"" + message + "\" to memo " + targ + "."); //Log
     } else {
-        applog("Client " + clientid + " attempted to send message \"" + message + "\" to memo " + targ + "."); //Log
+        applog("Client " + CIDFct(clientid) + " attempted to send message \"" + message + "\" to memo " + targ + "."); //Log
         denyRequestFct("client was not ready");
     }
 });
@@ -236,12 +241,19 @@ app.post("/zchangenick", function(req, res){                                   /
 app.post("/znewclient", function(req, res){                                    //Initial new client request
     "use strict";
     var nick = req.body.nick,                                                  //Get the requested nick
-        id, config;
+        id, config, rand;
     ip = getIPFct(req);                                                        //Client IP address
     applog("Responded to /znewclient request from " + ip + ".");               //Log response
 
     clientstotal += 1;                                                         //Increment the client counter
-    id = clientstotal;                                                         //Put the client counter into an ID variable for readability
+
+    id = crypto.randomBytes(32).toString("base64");                            //Cryptographically strong random id
+
+    //If the ID already exists, loop until unique
+    for(var i = 0; !!clients[id]; i++) {
+        id = crypto.randomBytes(32).toString("base64");
+    }
+
     config = {                                                                 //Create the new client
       "id": id,                                                                //Unique ID
       "nick": nick,                                                            //Handle
@@ -253,7 +265,7 @@ app.post("/znewclient", function(req, res){                                    /
       "channels": ["#pesterchum","#PesterchumOnline"],                         //Initial channels
       "ready": false                                                           //Connection ready boolean
     };
-    clients.push(config);
+    clients[id] = config;
     
     pingchecks[id] = setInterval(function(){                                   //Create a pingcheck interval for the new client
         clients[id].missedpings += 1;                                          //Increment the missed pings by one
@@ -302,5 +314,5 @@ app.post("/znewclient", function(req, res){                                    /
     }
     
     res.send(config);                                                          //Give the client its object
-    applog("Created new client with ID of " + clientstotal + " and handle of " + nick + ".");
+    applog("Created new client with ID of " + id + " and handle of " + nick + ".");
 });
