@@ -1,3 +1,9 @@
+1.2.2 (07/06/2014)
+==================
+Features:
+
+* Changed client IDs from incremental to random
+
 1.2.1 (05/06/2014)
 ==================
 Features:
